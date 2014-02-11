@@ -1,0 +1,13 @@
+#!/usr/bin/env ruby
+require 'optparse'
+#require File.join("lib", "dirsplit")
+require './lib/dirsplit'
+
+splitter = Dirsplit.new
+
+if splitter.errors
+  splitter.errors.each do |error|
+    puts "Error: #{error}"
+  end
+  exit 1
+end
