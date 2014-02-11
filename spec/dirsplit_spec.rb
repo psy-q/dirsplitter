@@ -45,5 +45,13 @@ describe Dirsplit do
     end
   end
 
+  context "in alphabetic mode" do
+    it "should suggest directory names for creation based on the first character of each file encountered" do
+      ds = Dirsplit.new(:source => File.join(@data_dir, "source_with_alphabetic_files"), :destination => File.join(@data_dir, "destination"))
+      ds.gather_files
+      ds.unique_initials.sort.should == %w(a b c d e)
+    end
+
+  end
 
 end

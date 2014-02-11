@@ -88,4 +88,13 @@ class Dirsplit
     @files = Dir.glob(path).reject {|file| File.directory?(file) }
   end
 
+  def unique_initials
+    initials = []
+    if @files and @files.count > 0
+      initials = @files.map {|file|
+        File.basename(file)[0]
+      }.uniq
+    end
+  end
+
 end
