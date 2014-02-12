@@ -1,9 +1,9 @@
 #!/usr/bin/env ruby
-require 'optparse'
-#require File.join("lib", "dirsplit")
 require './lib/dirsplit'
+require './lib/dirsplit/optparse'
 
 splitter = Dirsplit.new
+splitter.parse_options
 
 if splitter.errors
   splitter.errors.each do |error|

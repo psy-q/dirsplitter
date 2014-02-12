@@ -1,6 +1,4 @@
-#!/usr/bin/env ruby
-
-require 'optparse'
+require 'logger'
 
 class Dirsplit
   attr_accessor :options
@@ -11,53 +9,19 @@ class Dirsplit
   attr_reader :checks_passed
   attr_reader :files
 
-
   def initialize(options = {})
     @options ||= options
     @errors = []
     @checks_passed = false
+    @logger = Logger.new(STDOUT)
 
     @recursive = false
-    self.parse_options
     @source = @options[:source] if @options[:source]
     @destination = @options[:destination] if @options[:destination]
     @recursive = @options[:recursive] if @options[:recursive]
     self.validate_directories
     if @errors.count == 0
       @checks_passed = true
-    end
-  end
-
-  def parse_options
-    begin
-      parser = OptionParser.new do |opts|
-        opts.banner = "Usage: dirsplit [options] -s SOURCE -d DESTINATION"
-
-        # Currently alphabetic mode is the only one that's supported
-        @options[:mode] = :alpha
-        opts.on("-m [MODE]", "--mode [MODE]", [:alpha], "Kind of subdirectories to create.") do |m|
-          @options[:mode] = m
-        end
-
-        opts.on "-s SOURCE", "--source SOURCE", "Source directory to copy files from." do |s|
-          @options[:source] = s
-        end
-
-        opts.on "-d DESTINATION", "--destination DESTINATION", "Destination directory to create subdirs in." do |d|
-          @options[:destination] = d
-        end
-
-        opts.on "-r", "--recursive", "Work recursively." do |r|
-          @options[:recursive] = r
-        end
-
-        opts.on_tail("-h", "--help", "Show this help.") do
-          puts opts
-          exit
-        end
-      end.parse!
-    rescue Exception => e
-      puts "Error parsing arguments: #{e}"
     end
   end
 
@@ -70,8 +34,7 @@ class Dirsplit
     if @destination.nil?
       @errors << "Destination directory is required." if @destination.nil?
     else
-      @errors << "Destination directory not readable." unless File.stat(@destination).readable?
-      @errors << "Destination directory not writable." unless File.stat(@destination).writable?
+      @errors << "Destination directory does not exist or is not writable." unless validate_destination_path(@destination)
     end
 
     unless @source.nil? and @destination.nil?
@@ -88,13 +51,69 @@ class Dirsplit
     @files = Dir.glob(path).reject {|file| File.directory?(file) }
   end
 
-  def unique_initials
+  def self.extract_initial(filename)
+    File.basename(filename)[0]
+  end
+
+  def destination_path_for(filename)
+    initial = self.class.extract_initial(filename)
+    destination_path = File.join(@destination, initial)
+  end
+
+  def validate_destination_path(destination_path)
+    if File.exist?(destination_path)
+      if File.writable?(destination_path)
+        return true
+      else
+        @logger.error "Destination directory #{destination_path} is not writable."
+        return false
+      end
+    else
+      @logger.error "Destination directory #{destination_path} does not exist."
+      return false
+    end
+  end
+
+  def extract_initials
     initials = []
     if @files and @files.count > 0
       initials = @files.map {|file|
-        File.basename(file)[0]
+        self.class.extract_initial(file)
       }.uniq
     end
+  end
+
+  def make_subdirectories(directories)
+    successes = 0
+    directories.each do |directory|
+      begin
+        if Dir.mkdir(File.join(@destination, directory))
+          successes += 1
+        end
+      rescue Errno::EEXIST
+        @logger.error "The directory #{File.join(@destination, directory)} already exists."
+      end
+    end
+    return successes
+  end
+
+  def copy_files
+    successes = 0
+    make_subdirectories(extract_initials)
+    @files.each do |file|
+      destination_path = destination_path_for(file)
+      if validate_destination_path(destination_path)
+        begin
+          FileUtils.copy(file, destination_path)
+          successes += 1
+        rescue Exception => e
+          @logger.error("Failed to copy #{file} to #{destination_path}: Copy failed with #{e}.")
+        end
+      else
+        @logger.error("Failed to copy #{file} to #{destination_path}: Destination path does not validate.")
+      end
+    end
+    return successes
   end
 
 end
