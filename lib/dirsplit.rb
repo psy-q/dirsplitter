@@ -1,4 +1,5 @@
 require 'logger'
+require 'fileutils'
 
 class Dirsplit
   attr_accessor :options
@@ -11,20 +12,24 @@ class Dirsplit
   attr_reader :files
 
   def initialize(options = {})
-    @options ||= options
-    @errors = []
+    @options = options
     @checks_passed = false
     @logger = Logger.new(STDOUT)
     @limit = nil
+    @errors = []
 
     @recursive = false
+
     @source = @options[:source] if @options[:source]
     @destination = @options[:destination] if @options[:destination]
     @recursive = @options[:recursive] if @options[:recursive]
     @limit = @options[:limit].to_i if @options[:limit]
+  end
+
+  def preflight
     self.validate_directories
     if @errors.count == 0
-      @checks_passed = true
+      checks_passed = true
     end
   end
 
@@ -143,6 +148,7 @@ class Dirsplit
     files_and_destinations.each do |fd|
       file_source = fd[0]
       file_destination = File.join(@destination, fd[1])
+      @logger.info "Copying #{file_source} to #{file_destination}"
       if validate_destination_path(file_destination)
         begin
           FileUtils.copy(file_source, file_destination)
@@ -156,6 +162,5 @@ class Dirsplit
     end
     return successes
   end
-
 
 end

@@ -1,37 +1,31 @@
 require 'optparse'
 class Dirsplit
-  def parse_options
+  def parse_options(args)
     begin
       parser = OptionParser.new do |opts|
         opts.banner = "Usage: dirsplit [options] -s SOURCE -d DESTINATION"
 
-        # Currently alphabetic mode is the only one that's supported
-        @options[:mode] = :alpha
-        opts.on("-m [MODE]", "--mode [MODE]", [:alpha], "Kind of subdirectories to create.") do |m|
-          @options[:mode] = m
+        opts.on "-s SOURCE", "--source SOURCE", String, "Source directory to copy files from." do |s|
+          @source = s
         end
 
-        opts.on "-s SOURCE", "--source SOURCE", "Source directory to copy files from." do |s|
-          @options[:source] = s
+        opts.on "-d DESTINATION", "--destination DESTINATION", String, "Destination directory to create subdirs in." do |d|
+          @destination = d
         end
 
-        opts.on "-d DESTINATION", "--destination DESTINATION", "Destination directory to create subdirs in." do |d|
-          @options[:destination] = d
-        end
-
+        @recursive = false
         opts.on "-r", "--recursive", "Work recursively." do |r|
-          @options[:recursive] = r
+          @recursive = r
         end
 
-        opts.on "-l", "--limit", "Maximum number of files per destination directory." do |l|
-          @options[:limit] = l.to_i
+        opts.on "-l", "--limit", Integer, "Maximum number of files per destination directory." do |l|
+          @limit = l
         end
 
         opts.on_tail("-h", "--help", "Show this help.") do
           puts opts
-          exit
         end
-      end.parse!
+      end.parse(args)
     rescue Exception => e
       puts "Error parsing arguments: #{e}"
     end

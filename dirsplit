@@ -3,11 +3,15 @@ require './lib/dirsplit'
 require './lib/dirsplit/optparse'
 
 splitter = Dirsplit.new
-splitter.parse_options
+splitter.parse_options(ARGV)
+splitter.preflight
 
-if splitter.errors
+if splitter.errors.count > 0
   splitter.errors.each do |error|
     puts "Error: #{error}"
   end
   exit 1
+else
+  splitter.gather_files
+  splitter.copy_files
 end
