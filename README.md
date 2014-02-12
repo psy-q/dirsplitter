@@ -31,6 +31,10 @@ Otherwise it surely can't find its library. The library (in `lib/dirsplit.rb`) m
 * Make sure your test is green.
 * Push to your repo and submit a pull request.
 
+### Compatibility
+
+This works with Ruby 2.1, 2.0, 1.9.3 and jRuby in 1.9 mode. It should work on GNU/Linux, Mac OS X and Windows.
+
 ### Build status
 
 Holy crap, it's a build status:
