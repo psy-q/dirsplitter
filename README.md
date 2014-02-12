@@ -7,10 +7,10 @@ Small script to split a directory containing many files into many subdirectories
 ### Usage
 
 ```bash
-    dirsplit --num 254 --mode alpha source dest
+    dirsplit --l 254 -s source -d dest
 ```
 
-Copies all files from directory `source` into subdirectories based on characters of the alphabet (that's the `alpha` mode). The subdirectories are created underneath `dest`.
+Copies all files from directory `source` into subdirectories based on characters of the alphabet. The subdirectories are created underneath `dest`. See `--help` for more options.
 
 
 ### Contributing
