@@ -13,6 +13,9 @@ describe Dirsplit do
     unless File.exist?(File.join(@data_dir, "destination"))
       Dir.mkdir(File.join(@data_dir, "destination"))
     end
+    unless File.exist?(File.join(@data_dir, "empty_source"))
+      Dir.mkdir(File.join(@data_dir, "empty_source"))
+    end
   end
 
   after(:all) do
