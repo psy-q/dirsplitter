@@ -83,19 +83,82 @@ describe Dirsplit do
         File.exists?(fullpath).should == true
       end
     end
+
+    it "should make directories underneath the destination directory" do
+      directories = ["a","b","c"]
+      fullpaths = []
+      ds = Dirsplit.new(:source => File.join(@data_dir, "empty_source"), :destination => File.join(@data_dir, "destination"))
+      ds.make_subdirectories(directories).should == 3
+      directories.each do |dir|
+        fullpaths << File.join(@data_dir, "destination", dir)
+      end
+      fullpaths.each do |fullpath|
+        File.exists?(fullpath).should == true
+      end
+    end
+
+    it "should accept arrays of file paths, not just strings, to make subdirectories with" do
+      directories = [
+        File.join("a", "a"),
+        File.join("b", "b"),
+        File.join("c", "c")
+      ]
+      fullpaths = []
+      ds = Dirsplit.new(:source => File.join(@data_dir, "empty_source"), :destination => File.join(@data_dir, "destination"))
+      ds.make_subdirectories(directories).should == 3
+      directories.each do |dir|
+        fullpaths << File.join(@data_dir, "destination", dir)
+      end
+      fullpaths.each do |fullpath|
+        File.exists?(fullpath).should == true
+      end
+    end
+
+    it "should copy only up to the specified limit of files per directory" do
+      counting_destination = File.join(@data_dir, "destination", "for_counting")
+      Dir.mkdir(counting_destination)
+      ds = Dirsplit.new(:source => File.join(@data_dir, "source_with_100_files"), :destination => counting_destination)
+      ds.recursive = true
+      ds.limit = 20
+      ds.gather_files
+      ds.copy_files
+
+      (1..9).each do |i|
+        path = File.join(counting_destination, i.to_s, "**", "*")
+        files = Dir.glob(path).reject {|file| File.directory?(file) }
+        files.count.should_not == 0
+        files.count.should <= 20
+      end
+    end
+
+    it "should determine which and how many subdirectories to create so as to not exceed the file limit per dir" do
+      ds = Dirsplit.new(:source => File.join(@data_dir, "source_with_many_files_per_initial"), :destination => File.join(@data_dir, "destination"))
+      ds.recursive = true
+      ds.limit = 2
+      ds.gather_files
+      subdirectories = ds.determine_subdirectories
+      subdirectories.count.should == 10
+      subdirectories.include?("a/3").should == true
+    end
+
+    it "should copy files to numbered subdirectories if they would exceed the file number limit otherwise" do
+      counting_destination = File.join(@data_dir, "destination", "for_counting_alpha")
+      Dir.mkdir(counting_destination)
+      ds = Dirsplit.new(:source => File.join(@data_dir, "source_with_many_files_per_initial"), :destination => counting_destination)
+      ds.recursive = true
+      ds.limit = 2
+      ds.gather_files
+      ds.copy_files
+
+      File.exist?(File.join(counting_destination, "a", "1", "aardvark")).should == true
+      File.exist?(File.join(counting_destination, "a", "3", "abroad")).should == true
+      File.exist?(File.join(counting_destination, "a", "7", "adrenalin")).should == true
+
+    end
+
+
   end
 
-  it "should make directories underneath the destination directory" do
-    directories = ["a","b","c"]
-    fullpaths = []
-    ds = Dirsplit.new(:source => File.join(@data_dir, "empty_source"), :destination => File.join(@data_dir, "destination"))
-    ds.make_subdirectories(directories).should == 3
-    directories.each do |dir|
-      fullpaths << File.join(@data_dir, "destination", dir)
-    end
-    fullpaths.each do |fullpath|
-      File.exists?(fullpath).should == true
-    end
-  end
+
 
 end

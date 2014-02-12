@@ -23,6 +23,10 @@ class Dirsplit
           @options[:recursive] = r
         end
 
+        opts.on "-l", "--limit", "Maximum number of files per destination directory." do |l|
+          @options[:limit] = l.to_i
+        end
+
         opts.on_tail("-h", "--help", "Show this help.") do
           puts opts
           exit
