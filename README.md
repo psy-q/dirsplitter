@@ -6,7 +6,7 @@ Small script to split a directory containing many files into many subdirectories
 
 ### Usage
 
-```bash
+```
     dirsplit -l 254 -s source -d dest
 ```
 
@@ -14,7 +14,7 @@ Copies all files from directory `source` into subdirectories based on characters
 
 Note that you probably have to run it from inside this source directory, like so:
 
-```bash
+```
     ./dirsplit -l 10 -s source -d dest
 ```
 
