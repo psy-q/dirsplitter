@@ -23,3 +23,9 @@ Copies all files from directory `source` into subdirectories based on characters
 * Write your new feature.
 * Make sure your test is green.
 * Push to your repo and submit a pull request.
+
+### Build status
+
+Holy crap, it's a build status:
+
+[![Build Status](https://travis-ci.org/psy-q/dirsplitter.png?branch=master)](https://travis-ci.org/psy-q/dirsplitter)
